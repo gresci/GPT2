@@ -61,7 +61,7 @@ while True:
         # If an exception happens in this 'with' block, it will be sent back to the ai_integration library
         predictions = network.predict(input_fn=partial(gpt2_pred_input, text=inputs_dict['text']))
 
-        p = predictions[0]  # return just the first one
+        p = next(predictions)  # return just the first one
         p = p["tokens"]
         result_text = enc.decode(p)
 
