@@ -8,9 +8,9 @@ WORKDIR /model
 
 RUN mkdir PrettyBig
 RUN wget -nc https://deepai-opensource-codebases-models.s3-us-west-2.amazonaws.com/gpt2-prettybig/PrettyBig/checkpoint -O PrettyBig/checkpoint
-ADD wget -nc https://deepai-opensource-codebases-models.s3-us-west-2.amazonaws.com/gpt2-prettybig/PrettyBig/model.ckpt.index -O PrettyBig/model.ckpt.index
-ADD wget -nc https://deepai-opensource-codebases-models.s3-us-west-2.amazonaws.com/gpt2-prettybig/PrettyBig/model.ckpt.meta -O PrettyBig/model.ckpt.meta
-ADD wget -nc https://deepai-opensource-codebases-models.s3-us-west-2.amazonaws.com/gpt2-prettybig/PrettyBig/model.ckpt.data-00000-of-00001 -O PrettyBig/model.ckpt.data-00000-of-00001
+RUN wget -nc https://deepai-opensource-codebases-models.s3-us-west-2.amazonaws.com/gpt2-prettybig/PrettyBig/model.ckpt.index -O PrettyBig/model.ckpt.index
+RUN wget -nc https://deepai-opensource-codebases-models.s3-us-west-2.amazonaws.com/gpt2-prettybig/PrettyBig/model.ckpt.meta -O PrettyBig/model.ckpt.meta
+RUN wget -nc https://deepai-opensource-codebases-models.s3-us-west-2.amazonaws.com/gpt2-prettybig/PrettyBig/model.ckpt.data-00000-of-00001 -O PrettyBig/model.ckpt.data-00000-of-00001
 
 COPY . /model
 
