@@ -1,8 +1,7 @@
 import json
-import sys
 
-import tensorflow as tf
 import ai_integration
+import tensorflow as tf
 
 from inputs import *
 from model_fns import *
@@ -23,13 +22,6 @@ inputs = {
 
 predict_mode = True
 
-# Setup logging
-tf.logging.set_verbosity(logging.INFO)
-handlers = [
-    logging.StreamHandler(sys.stdout)
-]
-logger = logging.getLogger('tensorflow')
-logger.handlers = handlers
 
 # Read params of model
 with open("PrettyBig.json", "r") as f:
