@@ -19,13 +19,12 @@ models = {
 inputs = {
     "openwebtext": openwebtext,  # Standard OpenWebtext input
     "openwebtext_longbiased": openwebtext_longbiased,
-# OpenWebtext with a bias towards showing more long (>512 tokens) examples
+    # OpenWebtext with a bias towards showing more long (>512 tokens) examples
     "openwebtext_long": openwebtext_long,  # Openwebtext that only shows long examples
 }
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--tpu', type=str)  # Name of TPU to train on, if any
     parser.add_argument('--model', type=str)  # JSON file that contains model parameters
     parser.add_argument("--predict_file", type=str)  # File to take as input for predict
     parser.add_argument("--predict_text", type=str)  # Take string directly from args
@@ -59,11 +58,6 @@ if __name__ == "__main__":
     with open(args.model, "r") as f:
         params = json.load(f)
 
-    if not args.tpu is None:
-        params["use_tpu"] = True
-    else:
-        params["use_tpu"] = False
-
     if args.top_k is not None:
         params["top_k"] = args.top_k
 
@@ -80,49 +74,23 @@ if __name__ == "__main__":
     predict_fn = models[params["model"]][1]
     input_fn = inputs[params["input"]]
 
-    if params["use_tpu"] and not predict_mode:
-        # Resolve TPU cluster and runconfig
-        tpu_cluster_resolver = tf.contrib.cluster_resolver.TPUClusterResolver(args.tpu)
-
-        run_config = tf.contrib.tpu.RunConfig(
-            model_dir=params["model_path"],
-            cluster=tpu_cluster_resolver,
-            save_checkpoints_secs=60 * 30,
-            session_config=tf.ConfigProto(
-                # allow_soft_placement=True, 
-                # log_device_placement=True
-            ),
-            tpu_config=tf.contrib.tpu.TPUConfig(iterations_per_loop=params["iterations"])
-        )
-
-        # Set up network
-        network = tf.contrib.tpu.TPUEstimator(
-            model_fn=model_fn,
-            use_tpu=True,
-            train_batch_size=params["train_batch_size"],  # These are the global sizes, must be divisible by replicas
-            eval_batch_size=params["eval_batch_size"],
-            predict_batch_size=params["predict_batch_size"],
-            config=run_config,
-            params=params)
-
+    # Non TPU setup
+    if not predict_mode:
+        params["batch_size"] = params["train_batch_size"]
     else:
-        # Non TPU setup
-        if not predict_mode:
-            params["batch_size"] = params["train_batch_size"]
-        else:
-            params["batch_size"] = params["predict_batch_size"]
-        run_config = tf.estimator.RunConfig(
-            model_dir=params["model_path"],
-            session_config=tf.ConfigProto(
-                # log_device_placement=True,
-                # allow_soft_placement=True
-            ),
-        )
+        params["batch_size"] = params["predict_batch_size"]
+    run_config = tf.estimator.RunConfig(
+        model_dir=params["model_path"],
+        session_config=tf.ConfigProto(
+            # log_device_placement=True,
+            # allow_soft_placement=True
+        ),
+    )
 
-        network = tf.estimator.Estimator(
-            model_fn=model_fn,
-            config=run_config,
-            params=params)
+    network = tf.estimator.Estimator(
+        model_fn=model_fn,
+        config=run_config,
+        params=params)
 
     if predict_mode:
         logger.info("Generating predictions...")
