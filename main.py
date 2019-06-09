@@ -52,7 +52,7 @@ network = tf.estimator.Estimator(
 while True:
     with ai_integration.get_next_input(inputs_schema={"text": {"type": "text"}}) as inputs_dict:
         # If an exception happens in this 'with' block, it will be sent back to the ai_integration library
-
+        tf.set_random_seed(1) # try to make results predictable
         result_text = gpt2_predict(network, inputs_dict['text'], params)
         result_data = {
             "content-type": 'text/plain',
