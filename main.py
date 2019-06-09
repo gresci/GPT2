@@ -12,16 +12,6 @@ from models.gpt2 import encoder
 from inputs import gpt2_pred_input
 
 
-# Takes in the user supplied text and generates output text. Returns text
-def gpt2_predict(network, text, enc):
-    predictions = network.predict(input_fn=partial(gpt2_pred_input, text=text))
-
-    for i, p in enumerate(predictions):
-        p = p["tokens"]
-        text = enc.decode(p)
-        return text  # return just the first one
-
-
 inputs = {
     "openwebtext": openwebtext,  # Standard OpenWebtext input
     "openwebtext_longbiased": openwebtext_longbiased,
@@ -69,7 +59,12 @@ enc = encoder.get_encoder(params["encoder_path"])
 while True:
     with ai_integration.get_next_input(inputs_schema={"text": {"type": "text"}}) as inputs_dict:
         # If an exception happens in this 'with' block, it will be sent back to the ai_integration library
-        result_text = gpt2_predict(network, inputs_dict['text'], enc)
+        predictions = network.predict(input_fn=partial(gpt2_pred_input, text=inputs_dict['text']))
+
+        p = predictions[0]  # return just the first one
+        p = p["tokens"]
+        result_text = enc.decode(p)
+
         result_data = {
             "content-type": 'text/plain',
             "data": result_text,
