@@ -11,6 +11,7 @@ from models.gpt2 import encoder
 
 from inputs import gpt2_pred_input
 
+
 inputs = {
     "openwebtext": openwebtext,  # Standard OpenWebtext input
     "openwebtext_longbiased": openwebtext_longbiased,
@@ -48,53 +49,48 @@ run_config = tf.estimator.RunConfig(
     ),
 )
 
-config = tf.ConfigProto()
-config.gpu_options.per_process_gpu_memory_fraction = 0.95
+network = tf.estimator.Estimator(
+    model_fn=gpt2_model,
+    config=run_config,
+    params=params)
 
-# the persistent session across function calls exposed to external code interfaces
-with tf.Session(config=config) as session:
-    network = tf.estimator.Estimator(
-        model_fn=gpt2_model,
-        config=run_config,
-        params=params)
+enc = encoder.get_encoder(params["encoder_path"])
 
-    enc = encoder.get_encoder(params["encoder_path"])
+while True:
+    with ai_integration.get_next_input(inputs_schema={"text": {"type": "text"}}) as inputs_dict:
+        # If an exception happens in this 'with' block, it will be sent back to the ai_integration library
+        predictions = network.predict(input_fn=partial(gpt2_pred_input, text=inputs_dict['text']))
 
-    while True:
-        with ai_integration.get_next_input(inputs_schema={"text": {"type": "text"}}) as inputs_dict:
-            # If an exception happens in this 'with' block, it will be sent back to the ai_integration library
-            predictions = network.predict(input_fn=partial(gpt2_pred_input, text=inputs_dict['text']))
+        p = next(predictions)  # return just the first one
+        p = p["tokens"]
+        result_text = enc.decode(p)
 
-            p = next(predictions)  # return just the first one
-            p = p["tokens"]
-            result_text = enc.decode(p)
+        result_data = {
+            "content-type": 'text/plain',
+            "data": result_text,
+            "success": True
+        }
+        ai_integration.send_result(result_data)
 
-            result_data = {
-                "content-type": 'text/plain',
-                "data": result_text,
-                "success": True
-            }
-            ai_integration.send_result(result_data)
+# Train eval loop
+# input_fn = inputs[params["input"]]
 
-    # Train eval loop
-    # input_fn = inputs[params["input"]]
-
-    # while True:
-    #     start = time.time()
-    #
-    #     network.train(
-    #         input_fn=partial(input_fn, eval=False),
-    #         steps=params["train_steps"])
-    #
-    #     end = time.time()
-    #     logger.info("\nTrain loop took {:.2f}s\n".format(end - start))
-    #
-    #     eval_result = network.evaluate(
-    #         input_fn=partial(input_fn, eval=True),
-    #         steps=params["eval_steps"])
-    #
-    #     logger.info("\nEval Results: {}\n".format(str(eval_result)))
-    #
-    #     if network.get_variable_value("global_step") > params["max_steps"]:
-    #         logger.info("Done!")
-    #         break
+# while True:
+#     start = time.time()
+#
+#     network.train(
+#         input_fn=partial(input_fn, eval=False),
+#         steps=params["train_steps"])
+#
+#     end = time.time()
+#     logger.info("\nTrain loop took {:.2f}s\n".format(end - start))
+#
+#     eval_result = network.evaluate(
+#         input_fn=partial(input_fn, eval=True),
+#         steps=params["eval_steps"])
+#
+#     logger.info("\nEval Results: {}\n".format(str(eval_result)))
+#
+#     if network.get_variable_value("global_step") > params["max_steps"]:
+#         logger.info("Done!")
+#         break
