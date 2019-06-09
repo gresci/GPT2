@@ -59,7 +59,10 @@ enc = encoder.get_encoder(params["encoder_path"])
 while True:
     with ai_integration.get_next_input(inputs_schema={"text": {"type": "text"}}) as inputs_dict:
         # If an exception happens in this 'with' block, it will be sent back to the ai_integration library
-        predictions = network.predict(input_fn=partial(gpt2_pred_input, text=inputs_dict['text']))
+        text = inputs_dict['text']
+        if isinstance(text, bytes):
+            text = text.decode('utf-8')
+        predictions = network.predict(input_fn=partial(gpt2_pred_input, text=text))
 
         p = next(predictions)  # return just the first one
         p = p["tokens"]
