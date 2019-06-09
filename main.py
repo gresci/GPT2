@@ -36,6 +36,9 @@ if not "precision" in params.keys():
 if not "iterations" in params.keys():
     params["iterations"] = 1  # Because this controls how many samples are prefetched
 
+sess_config = tf.ConfigProto()
+sess_config.gpu_options.per_process_gpu_memory_fraction = 0.15
+
 # Non TPU setup
 if not predict_mode:
     params["batch_size"] = params["train_batch_size"]
@@ -43,10 +46,7 @@ else:
     params["batch_size"] = params["predict_batch_size"]
 run_config = tf.estimator.RunConfig(
     model_dir=params["model_path"],
-    session_config=tf.ConfigProto(
-        # log_device_placement=True,
-        # allow_soft_placement=True
-    ),
+    session_config=sess_config,
 )
 
 network = tf.estimator.Estimator(
