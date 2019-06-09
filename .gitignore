@@ -107,4 +107,5 @@ logs/
 *.log
 test_*
 test/
-.vscode
+.vscode.idea/*
+.idea/*

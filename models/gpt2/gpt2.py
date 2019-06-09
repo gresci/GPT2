@@ -2,6 +2,8 @@ import numpy as np
 import tensorflow as tf
 
 
+
+
 def shape_list(x):
     """Deal with dynamic shape in tensorflow cleanly."""
     static = x.shape.as_list()

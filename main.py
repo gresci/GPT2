@@ -1,12 +1,10 @@
 import argparse
 import json
-import logging
 import sys
 import time
-from functools import partial
-from pathlib import Path
 
 import tensorflow as tf
+from pathlib import Path
 
 from inputs import *
 from model_fns import *
@@ -15,23 +13,23 @@ from predict_fns import *
 # This program was designed to function with multiple kinds of models, but currently only GPT2 is supported
 # The first element in the tupel is the model function, the second is the function called when predicting
 models = {
-    "GPT2": (gpt2_model, gpt2_predict) 
+    "GPT2": (gpt2_model, gpt2_predict)
 }
 
 inputs = {
-    "openwebtext": openwebtext, # Standard OpenWebtext input
-    "openwebtext_longbiased": openwebtext_longbiased, # OpenWebtext with a bias towards showing more long (>512 tokens) examples
-    "openwebtext_long": openwebtext_long, # Openwebtext that only shows long examples
+    "openwebtext": openwebtext,  # Standard OpenWebtext input
+    "openwebtext_longbiased": openwebtext_longbiased,
+# OpenWebtext with a bias towards showing more long (>512 tokens) examples
+    "openwebtext_long": openwebtext_long,  # Openwebtext that only shows long examples
 }
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--tpu', type=str) # Name of TPU to train on, if any
-    parser.add_argument('--model', type=str) # JSON file that contains model parameters
-    parser.add_argument("--predict_file", type=str) # File to take as input for predict
-    parser.add_argument("--predict_text", type=str) # Take string directly from args
-    parser.add_argument("--top_k", type=int) # Top K truncation parameter for text generation
+    parser.add_argument('--tpu', type=str)  # Name of TPU to train on, if any
+    parser.add_argument('--model', type=str)  # JSON file that contains model parameters
+    parser.add_argument("--predict_file", type=str)  # File to take as input for predict
+    parser.add_argument("--predict_text", type=str)  # Take string directly from args
+    parser.add_argument("--top_k", type=int)  # Top K truncation parameter for text generation
     args = parser.parse_args()
 
     # Get prediction text
@@ -46,8 +44,7 @@ if __name__ == "__main__":
     elif args.predict_file is not None and args.predict_text is not None:
         print("ERROR: Specify exactly one of --predict_file and --predict_text!")
         sys.exit()
-    
-    
+
     # Setup logging
     Path("logs").mkdir(exist_ok=True)
     tf.logging.set_verbosity(logging.INFO)
@@ -71,10 +68,11 @@ if __name__ == "__main__":
         params["top_k"] = args.top_k
 
     if not "precision" in params.keys():
-        params["precision"] = "float32" # Doesn't actually do anything since float32 is the default anyways. Only recognized other dtype is "bfloat16"
+        params[
+            "precision"] = "float32"  # Doesn't actually do anything since float32 is the default anyways. Only recognized other dtype is "bfloat16"
 
     if not "iterations" in params.keys():
-        params["iterations"] = 1 # Because this controls how many samples are prefetched
+        params["iterations"] = 1  # Because this controls how many samples are prefetched
 
     logger.info(params)
 
@@ -89,23 +87,23 @@ if __name__ == "__main__":
         run_config = tf.contrib.tpu.RunConfig(
             model_dir=params["model_path"],
             cluster=tpu_cluster_resolver,
-            save_checkpoints_secs=60*30,
+            save_checkpoints_secs=60 * 30,
             session_config=tf.ConfigProto(
                 # allow_soft_placement=True, 
                 # log_device_placement=True
-                ),
-                tpu_config=tf.contrib.tpu.TPUConfig(iterations_per_loop=params["iterations"])
+            ),
+            tpu_config=tf.contrib.tpu.TPUConfig(iterations_per_loop=params["iterations"])
         )
 
         # Set up network
         network = tf.contrib.tpu.TPUEstimator(
-                model_fn=model_fn,
-                use_tpu=True,
-                train_batch_size=params["train_batch_size"], # These are the global sizes, must be divisible by replicas
-                eval_batch_size=params["eval_batch_size"],
-                predict_batch_size=params["predict_batch_size"],
-                config=run_config,
-                params=params)
+            model_fn=model_fn,
+            use_tpu=True,
+            train_batch_size=params["train_batch_size"],  # These are the global sizes, must be divisible by replicas
+            eval_batch_size=params["eval_batch_size"],
+            predict_batch_size=params["predict_batch_size"],
+            config=run_config,
+            params=params)
 
     else:
         # Non TPU setup
@@ -136,17 +134,16 @@ if __name__ == "__main__":
         start = time.time()
 
         network.train(
-                input_fn=partial(input_fn, eval=False),
-                steps=params["train_steps"])
-                
+            input_fn=partial(input_fn, eval=False),
+            steps=params["train_steps"])
 
         end = time.time()
-        logger.info("\nTrain loop took {:.2f}s\n".format(end-start))
+        logger.info("\nTrain loop took {:.2f}s\n".format(end - start))
 
         eval_result = network.evaluate(
-           input_fn=partial(input_fn, eval=True),
-           steps=params["eval_steps"])
-        
+            input_fn=partial(input_fn, eval=True),
+            steps=params["eval_steps"])
+
         logger.info("\nEval Results: {}\n".format(str(eval_result)))
 
         if network.get_variable_value("global_step") > params["max_steps"]:
