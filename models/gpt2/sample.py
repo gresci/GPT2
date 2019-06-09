@@ -56,7 +56,7 @@ def sample_sequence(*, params, length, start_token=None, batch_size=None, contex
             next_outputs = step(params, prev[:, tf.newaxis], past=past)
             logits = next_outputs['logits'][:, -1, :]  / tf.to_float(temperature)
             logits = top_k_logits(logits, k=top_k)
-            samples = tf.multinomial(logits, num_samples=1, output_dtype=tf.int32)
+            samples = tf.multinomial(logits, num_samples=1, output_dtype=tf.int32, seed=1)
             return [
                 tf.concat([past, next_outputs['presents']], axis=-2),
                 tf.squeeze(samples, axis=[1]),
