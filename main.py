@@ -27,7 +27,7 @@ with open("PrettyBig.json", "r") as f:
 
 params["use_tpu"] = False
 
-params["top_k"] = 100  # This controls text gen size
+params["top_k"] = 40  # This controls ... something
 
 if not "precision" in params.keys():
     params[
