@@ -15,3 +15,5 @@ RUN wget -nc https://deepai-opensource-codebases-models.s3-us-west-2.amazonaws.c
 COPY . /model
 
 
+CMD []
+ENTRYPOINT ["python3", "main.py"]
