@@ -37,7 +37,7 @@ if not "iterations" in params.keys():
     params["iterations"] = 1  # Because this controls how many samples are prefetched
 
 sess_config = tf.ConfigProto()
-sess_config.gpu_options.per_process_gpu_memory_fraction = 0.6
+sess_config.gpu_options.per_process_gpu_memory_fraction = 0.5
 
 # Non TPU setup
 if not predict_mode:
