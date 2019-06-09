@@ -19,7 +19,7 @@ models = {
 inputs = {
     "openwebtext": openwebtext,  # Standard OpenWebtext input
     "openwebtext_longbiased": openwebtext_longbiased,
-    # OpenWebtext with a bias towards showing more long (>512 tokens) examples
+# OpenWebtext with a bias towards showing more long (>512 tokens) examples
     "openwebtext_long": openwebtext_long,  # Openwebtext that only shows long examples
 }
 
@@ -58,6 +58,8 @@ if __name__ == "__main__":
     with open(args.model, "r") as f:
         params = json.load(f)
 
+    params["use_tpu"] = False
+
     if args.top_k is not None:
         params["top_k"] = args.top_k
 
@@ -73,6 +75,7 @@ if __name__ == "__main__":
     model_fn = models[params["model"]][0]
     predict_fn = models[params["model"]][1]
     input_fn = inputs[params["input"]]
+
 
     # Non TPU setup
     if not predict_mode:

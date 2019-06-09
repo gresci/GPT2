@@ -1,14 +1,16 @@
 FROM tensorflow/tensorflow:1.13.1-gpu-py3
 
+RUN apt-get update && apt-get install -y --no-install-recommends wget
+
 RUN pip3 install regex ai-integration==1.0.6
 
 WORKDIR /model
 
 RUN mkdir PrettyBig
-ADD https://deepai-opensource-codebases-models.s3-us-west-2.amazonaws.com/gpt2-prettybig/PrettyBig/checkpoint PrettyBig/checkpoint
-ADD https://deepai-opensource-codebases-models.s3-us-west-2.amazonaws.com/gpt2-prettybig/PrettyBig/model.ckpt.index PrettyBig/model.ckpt.index
-ADD https://deepai-opensource-codebases-models.s3-us-west-2.amazonaws.com/gpt2-prettybig/PrettyBig/model.ckpt.meta PrettyBig/model.ckpt.meta
-ADD https://deepai-opensource-codebases-models.s3-us-west-2.amazonaws.com/gpt2-prettybig/PrettyBig/model.ckpt.data-00000-of-00001 PrettyBig/model.ckpt.data-00000-of-00001
+RUN wget -nc https://deepai-opensource-codebases-models.s3-us-west-2.amazonaws.com/gpt2-prettybig/PrettyBig/checkpoint -O PrettyBig/checkpoint
+ADD wget -nc https://deepai-opensource-codebases-models.s3-us-west-2.amazonaws.com/gpt2-prettybig/PrettyBig/model.ckpt.index -O PrettyBig/model.ckpt.index
+ADD wget -nc https://deepai-opensource-codebases-models.s3-us-west-2.amazonaws.com/gpt2-prettybig/PrettyBig/model.ckpt.meta -O PrettyBig/model.ckpt.meta
+ADD wget -nc https://deepai-opensource-codebases-models.s3-us-west-2.amazonaws.com/gpt2-prettybig/PrettyBig/model.ckpt.data-00000-of-00001 -O PrettyBig/model.ckpt.data-00000-of-00001
 
 COPY . /model
 
