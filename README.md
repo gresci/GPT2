@@ -1,5 +1,4 @@
 # GPT2 Text Generator
-**This is not the official GPT2 implementation!**
 
 
 ## For details see [Text Generator](https://deepai.org/machine-learning-model/text-generator) on [Deep AI](https://deepai.org).
