@@ -2,7 +2,7 @@ FROM tensorflow/tensorflow:1.13.1-gpu-py3
 
 RUN apt-get update && apt-get install -y --no-install-recommends wget
 
-RUN pip3 install regex ai-integration==1.0.7
+RUN pip3 install regex ai-integration==1.0.11
 
 WORKDIR /model
 
